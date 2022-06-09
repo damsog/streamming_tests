@@ -36,7 +36,7 @@ class Processor:
     def stop(self):
         self.process.terminate()
 
-    def read_image(self):
+    def read_stream(self):
         for line in self.process.stdout:
             with self.lock:
                 #service_reader.read_image(line.rstrip() )
@@ -73,6 +73,7 @@ def cancelProcessing(process_id):
 
     # Sets the cancel flag to True. tha is all needed.
     process_list[process_id].stop()
+    del process_list[process_id]
     return "cancelled"
 
 # This service starts a video processing and increases a counter to not start more processes than it can handle.
@@ -94,9 +95,12 @@ def start(process_id):
         if not process_running(process_list,process_id):
             return 1
 
-        print(f'Processing {process_list[process_id].process_id}')
-        process_list[process_id] = process_list[process_id].read_image()
-        print(f'Finished ')
+        print(f'Started Reading Process {process_list[process_id].process_id} stream')
+        try:
+            process_list[process_id] = process_list[process_id].read_stream()
+        except Exception as e:
+            print(f'Error reading process stream {e}')
+        print(f'Finished Reading Process {process_id} stream ')
     
     return "started"
 
